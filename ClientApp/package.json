@@ -23,7 +23,8 @@
     "ajv": "^6.9.1",
     "cross-env": "^5.2.0",
     "nan": "^2.14.1",
-    "typescript": "^3.9.7"
+    "typescript": "^3.9.7",
+    "react-scripts": "^3.4.1"
   },
   "eslintConfig": {
     "extends": "react-app"
