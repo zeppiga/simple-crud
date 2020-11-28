@@ -1,0 +1,11 @@
+div.list-header {
+    padding-left: 15px;
+}
+
+div.list-container {
+    user-select: none;
+}
+
+div.list-button {
+    cursor: pointer;
+}
