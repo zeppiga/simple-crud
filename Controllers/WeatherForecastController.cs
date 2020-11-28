@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Data.SqlClient;
+using Microsoft.AspNetCore.Mvc.Formatters;
 
 namespace simple_crud.Controllers
 {
@@ -17,10 +20,12 @@ namespace simple_crud.Controllers
         };
 
         private readonly ILogger<WeatherForecastController> _logger;
+        private readonly IConfiguration _configuration;
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger)
+        public WeatherForecastController(ILogger<WeatherForecastController> logger, IConfiguration configuration)
         {
             _logger = logger;
+            _configuration = configuration;
         }
 
         [HttpGet]
@@ -40,8 +45,14 @@ namespace simple_crud.Controllers
         [Route("test")]
         public string Get2()
         {
-            var variable = Environment.GetEnvironmentVariable("SQLCONNSTR_main");
-            return variable ?? ":(";
+            var connectionString = _configuration.GetValue<string>("SQLCONNSTR_main");
+            using var connection = new SqlConnection(connectionString);
+            using var command = new SqlCommand("SELECT TOP 1 Name FROM Test", connection);
+            command.Connection.Open();
+
+            var result = command.ExecuteScalar();
+
+            return result.ToString();
         }
     }
 
