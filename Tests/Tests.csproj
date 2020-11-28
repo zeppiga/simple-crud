@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\simple-crud\simple-crud.csproj" />
+    <ProjectReference Include="..\simple-crud.csproj" />
   </ItemGroup>
 
 </Project>
