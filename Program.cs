@@ -1,7 +1,7 @@
-using System;
-using System.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using simple_crud.ApplicationConfiguration;
 
 namespace simple_crud
 {
@@ -9,15 +9,17 @@ namespace simple_crud
     {
         public static void Main(string[] args)
         {
-            Console.Write(Process.GetCurrentProcess().Id);
             CreateHostBuilder(args).Build().Run();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
+                .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); })
+                .ConfigureLogging(logging =>
                 {
-                    webBuilder.UseStartup<Startup>();
+                    logging.ClearProviders();
+
+                    if (ApplicationConfigurationProvider.Instance.Configuration.ConsoleLoggingEnabled) logging.AddConsole();
                 });
     }
 }

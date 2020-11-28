@@ -1,68 +1,34 @@
-using System;
-using System.Linq;
-using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using simple_crud.ApplicationConfiguration;
+using simple_crud.ServicesRegistration;
 
 namespace simple_crud
 {
-    public static class ServiceRegistrator
-    {
-        public static void Do()
-        {
-            var assembly = Assembly.GetExecutingAssembly();
-
-            //assembly.GetTypes().Where(x => x.GetCustomAttributes(
-        }
-    }
-
-    [AttributeUsage(AttributeTargets.Class, Inherited = false)]
-    public sealed class SingletonAttribute : Attribute
-    {
-        public Type ExportType { get; }
-
-
-        public SingletonAttribute(Type exportType)
-        {
-            ExportType = exportType;
-        }
-    }
-
-
-    public interface ITest
-    {
-        void DoSomething();
-    }
-
-    [Singleton(typeof(ITest))]
-    public class Test1 : ITest
-    {
-        public void DoSomething()
-        {
-
-        }
-    }
-
-
-
     public class Startup
     {
+        private readonly IConfiguration _configuration;
+
         public Startup(IConfiguration configuration)
         {
-            Configuration = configuration;
+            _configuration = configuration;
         }
-
-        public IConfiguration Configuration { get; }
 
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
 
-            // In production, the React files will be served from this directory
+            ApplicationConfigurationProvider.Instance.InitializeConfiguration(_configuration);
+            services.AddSingleton(typeof(IApplicationConfiguration), ApplicationConfigurationProvider.Instance.Configuration);
+
+            var typesProvider = new DefaultTypesProvider();
+            var serviceRegistrator = new ServiceRegistrator(typesProvider);
+            serviceRegistrator.RegisterSingletons((toImplement, implementation) => services.AddSingleton(toImplement, implementation));
+            
             services.AddSpaStaticFiles(configuration =>
             {
                 configuration.RootPath = "ClientApp/build";
