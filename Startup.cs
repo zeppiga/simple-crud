@@ -1,3 +1,6 @@
+using System;
+using System.Linq;
+using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
@@ -7,6 +10,45 @@ using Microsoft.Extensions.Hosting;
 
 namespace simple_crud
 {
+    public static class ServiceRegistrator
+    {
+        public static void Do()
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+
+            //assembly.GetTypes().Where(x => x.GetCustomAttributes(
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+    public sealed class SingletonAttribute : Attribute
+    {
+        public Type ExportType { get; }
+
+
+        public SingletonAttribute(Type exportType)
+        {
+            ExportType = exportType;
+        }
+    }
+
+
+    public interface ITest
+    {
+        void DoSomething();
+    }
+
+    [Singleton(typeof(ITest))]
+    public class Test1 : ITest
+    {
+        public void DoSomething()
+        {
+
+        }
+    }
+
+
+
     public class Startup
     {
         public Startup(IConfiguration configuration)
