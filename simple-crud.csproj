@@ -12,19 +12,28 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="3.1.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="5.0.0" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
   </ItemGroup>
 
   <ItemGroup>
     <!-- Don't publish the SPA source files, but do show them in the project files list -->
+    <Compile Remove="simple-crud.Data\**" />
     <Compile Remove="Tests\**" />
     <Content Remove="$(SpaRoot)**" />
+    <Content Remove="simple-crud.Data\**" />
     <Content Remove="Tests\**" />
+    <EmbeddedResource Remove="simple-crud.Data\**" />
     <EmbeddedResource Remove="Tests\**" />
     <None Remove="$(SpaRoot)**" />
+    <None Remove="simple-crud.Data\**" />
     <None Remove="Tests\**" />
     <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="simple-crud.Data\simple-crud.Data.csproj" />
   </ItemGroup>
 
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
