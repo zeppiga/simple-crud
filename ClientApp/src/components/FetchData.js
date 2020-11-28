@@ -37,10 +37,14 @@ export class FetchData extends Component {
     );
   }
 
+  static render2(result) {
+    return (<div>{result}</div>);
+  }
+
   render() {
     let contents = this.state.loading
       ? <p><em>Loading...</em></p>
-      : FetchData.renderForecastsTable(this.state.forecasts);
+      : FetchData.render2(this.state.extra);
 
     return (
       <div>
@@ -52,8 +56,10 @@ export class FetchData extends Component {
   }
 
   async populateWeatherData() {
-    const response = await fetch('weatherforecast');
-    const data = await response.json();
-    this.setState({ forecasts: data, loading: false });
+  //  const response = await fetch('weatherforecast');
+    const response2 = await fetch('weatherforecast/test');
+    const data2 = await response2.text();
+    //const data = await response.json();
+    this.setState({ extra: data2, loading: false });
   }
 }

@@ -35,5 +35,20 @@ namespace simple_crud.Controllers
             })
             .ToArray();
         }
+
+        [HttpGet]
+        [Route("test")]
+        public string Get2()
+        {
+            var variable = Environment.GetEnvironmentVariable("SQLCONNSTR_main");
+            return variable ?? ":(";
+        }
+    }
+
+    public class WeatherForecast
+    {
+        public DateTime Date { get; set; }
+        public int TemperatureC { get; set; }
+        public string Summary { get; set; }
     }
 }

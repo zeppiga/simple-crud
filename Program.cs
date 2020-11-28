@@ -1,11 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace simple_crud
 {
@@ -13,6 +9,7 @@ namespace simple_crud
     {
         public static void Main(string[] args)
         {
+            Console.Write(Process.GetCurrentProcess().Id);
             CreateHostBuilder(args).Build().Run();
         }
 
