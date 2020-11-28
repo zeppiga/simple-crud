@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.AzureAppServices;
 using simple_crud.ApplicationConfiguration;
 
 namespace simple_crud
@@ -20,6 +22,17 @@ namespace simple_crud
                     logging.ClearProviders();
 
                     if (ApplicationConfigurationProvider.Instance.Configuration.ConsoleLoggingEnabled) logging.AddConsole();
+
+                    logging.AddAzureWebAppDiagnostics();
+                })
+                .ConfigureServices(serviceCollection =>
+                {
+                    serviceCollection.Configure<AzureFileLoggerOptions>(options =>
+                    {
+                        options.FileName = "azure-diagnostics-";
+                        options.FileSizeLimit = 50 * 1024;
+                        options.RetainedFileCountLimit = 5;
+                    });
                 });
     }
 }
