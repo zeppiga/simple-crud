@@ -6,8 +6,9 @@ div.list-container {
     user-select: none;
 }
 
-div.list-button {
+div.list-button, a.page-link {
     cursor: pointer;
+    user-select: none;
 }
 
 div.list-last-col {

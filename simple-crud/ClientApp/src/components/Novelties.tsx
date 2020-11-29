@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Pagination, PaginationProps } from "./Pagination"
+import { Novelty, NoveltyProps } from "./Novelty";
 import './Novelties.css';
 
 const noveltiesPerPage = 10;
+const expandedNovelties = new Set<number>();
 
 export function Novelties() {
     const [currentPageNo, setCurrentPageNo] = useState(1);
@@ -10,10 +12,24 @@ export function Novelties() {
     const [isLoading, setIsLoading] = useState(false);
     const [pagesCount, setPagesCount] = useState(null as number | null)
 
-    const loadedNovelties = new Map<number, NoveltyDetailed>();
+    useEffect(() => {
+        setIsLoading(true);
+
+        const promise2 = loadNoveltiesCount();
+        const promise3 = loadCurrentPage();
+        
+        Promise.all([promise2, promise3]).finally(() => setIsLoading(false));
+
+    }, [currentPageNo])
 
     function onNoveltyClick(id: number) {
         setNovelties(prev => {
+            if (expandedNovelties.has(id)) {
+                expandedNovelties.delete(id);
+            } else {
+                expandedNovelties.add(id);
+            }
+            
             const novelty = prev.find(x => x.id === id)!;
 
             novelty.expanded = !novelty.expanded;
@@ -29,15 +45,11 @@ export function Novelties() {
         }
     }
 
-    useEffect(() => {
-        setIsLoading(true);
-
-        const promise2 = loadNoveltiesCount();
-        const promise3 = loadCurrentPage();
-        
-        Promise.all([promise2, promise3]).finally(() => setIsLoading(false));
-
-    }, [currentPageNo])
+    function getNoveltyProps(novelty: NoveltyViewModel) : NoveltyProps {
+        return {
+            id: novelty.id
+        }
+    }
 
     async function loadNoveltiesCount() {
         const noveltiesCountResponse = await fetch('novelty/getcount');
@@ -55,28 +67,14 @@ export function Novelties() {
         const currentPageResponse = await fetch(`novelty/?take=${take}&offset=${offset}`);
         const currentPage: Array<NoveltyDto> = await currentPageResponse.json();
 
-        const novelties = currentPage.map<NoveltyViewModel>(x => ({...x, expanded: false }));
+        const novelties = currentPage.map<NoveltyViewModel>(x => ({ ...x, expanded: expandedNovelties.has(x.id) }));
         setNovelties(novelties);
-    }
-
-    function renderLoading(){
-        return <div> loadin...</div>;
-    }
-
-    function renderNovelty(noveltyVm: NoveltyViewModel) {
-        if (loadedNovelties.has(noveltyVm.id)){
-            const loadedNovelty = loadedNovelties.get(noveltyVm.id);
-            
-            return <div>{loadedNovelty!.description}</div>
-        }
-
-        return <div>something</div>;
     }
 
     return (
         <>
         {
-            isLoading ? renderLoading() :        
+            isLoading ? <div> loadin...</div> :        
         <div className="list-container">
             <div className="row list-header">
                 <div className="col-sm-1">
@@ -99,17 +97,16 @@ export function Novelties() {
                                     {index}
                             </div>
                             <div className="col-sm-8">
-                            {novelty.name}
+                                    {novelty.name}
                             </div>
                             <div className="col-sm-3 list-last-col">
-                            {novelty.lastChanged.toLocaleString()}
+                                    {novelty.lastChanged.toLocaleString()}
                             </div>
                             </div>
                         </div>
                         <div id="collapseOne" className={novelty.expanded ? "collapse show" : "collapse"}>
                             <div className="card-body">
-                                {/* {novelty.description} */}
-                                { renderNovelty(novelty) }
+                                {novelty.expanded ? <Novelty {...getNoveltyProps(novelty)}></Novelty> : <></>}
                             </div>
                         </div>
                     </div>
@@ -124,7 +121,7 @@ export function Novelties() {
 }
 
 
-interface NoveltyDetailed extends NoveltyViewModel {
+interface NoveltyDetailedDto extends NoveltyDto {
     description: string;
 }
 

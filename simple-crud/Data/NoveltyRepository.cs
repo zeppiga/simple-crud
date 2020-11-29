@@ -34,9 +34,9 @@ namespace simple_crud.Data
                 _context = context;
             }
 
-            public Task<INovelty> GetAsync(int id, CancellationToken cancellationToken)
+            public async Task<INovelty> GetAsync(int id, CancellationToken cancellationToken)
             {
-                throw new System.NotImplementedException();
+                return await _context.Novelties.SingleAsync(x => x.ID == id, cancellationToken);
             }
 
             //todo consider iasyncenumerable usage
