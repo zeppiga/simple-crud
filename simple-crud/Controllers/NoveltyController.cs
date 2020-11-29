@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Linq;
 using System.Threading;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
-using simple_crud.ApplicationConfiguration;
 using simple_crud.Data;
 using simple_crud.DTO;
 
@@ -15,33 +13,12 @@ namespace simple_crud.Controllers
     public class NoveltyController : ControllerBase
     {
         private readonly ILogger<NoveltyController> _logger;
-        private readonly IApplicationConfiguration _configuration;
         private readonly INoveltyRepository _repository;
 
-        public NoveltyController(ILogger<NoveltyController> logger, IApplicationConfiguration configuration, INoveltyRepository repository)
+        public NoveltyController(ILogger<NoveltyController> logger, INoveltyRepository repository)
         {
             _logger = logger;
-            _configuration = configuration;
             _repository = repository;
-        }
-
-        [HttpGet]
-        [Route("getCount")]
-        public async Task<IActionResult> GetCount(CancellationToken cancellationToken)
-        {
-            var count = await ExecuteActionInRepositoryContext(() => _repository.TotalCountAsync(cancellationToken));
-
-            return Ok(count);
-        }
-
-        [HttpGet]
-        [Route("")]
-        public async Task<IActionResult> GetInfos([FromQuery] int take, [FromQuery] int offset, CancellationToken cancellationToken)
-        {
-            var infos = await ExecuteActionInRepositoryContext(() => _repository.GetInfosAsync(take, offset, cancellationToken));
-            var dto = infos.Select(x => new BasicNoveltyInfoDto {Id = x.Id, LastChanged = x.LastChanged, Name = x.Name});
-
-            return Ok(dto);
         }
 
         [HttpGet]
@@ -64,10 +41,13 @@ namespace simple_crud.Controllers
     
         [HttpPut]
         [Route("{id}")]
-        public async Task<IActionResult> Modify(int id, [FromBody] object dto, CancellationToken cancellationToken)
+        public async Task<IActionResult> Modify(int id, [FromBody] NoveltyToAddDto dto, CancellationToken cancellationToken)
         {
-            NoveltyToAdd novelty = default;
-            var result = await ExecuteActionInRepositoryContext(() => _repository.TryUpdate(novelty, cancellationToken));
+            var noveltyToAdd = new NoveltyToAdd(dto.Name, dto.Description, id);
+            var _ = await _repository.TryUpdate(noveltyToAdd, cancellationToken);
+
+            var novelty = await _repository.GetAsync(id, cancellationToken);
+
             return Ok(novelty);
         }
 
@@ -75,9 +55,9 @@ namespace simple_crud.Controllers
         [Route("{id}")]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
-            NoveltyToAdd novelty = default;
-            var result = await ExecuteActionInRepositoryContext(() => _repository.TryUpdate(novelty, cancellationToken));
-            return Ok(novelty);
+            var _ = await _repository.TryRemove(id, cancellationToken);
+
+            return Ok();
         }
 
         private async Task<T> ExecuteActionInRepositoryContext<T>(Func<Task<T>> action)

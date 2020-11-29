@@ -46,14 +46,28 @@ namespace simple_crud.Data
                 return novelties;
             }
 
-            public Task<bool> TryRemove(int id, CancellationToken cancellationToken)
+            public async Task<bool> TryRemove(int id, CancellationToken cancellationToken)
             {
-                throw new NotImplementedException();
+                var toRemove = await _context.Novelties.SingleAsync(x => x.ID == id, cancellationToken);
+                _context.Novelties.Remove(toRemove);
+
+                await _context.SaveChangesAsync(cancellationToken);
+
+                return true;
             }
 
-            public Task<bool> TryUpdate(NoveltyToAdd novelty, CancellationToken cancellationToken)
+            public async Task<bool> TryUpdate(NoveltyToAdd novelty, CancellationToken cancellationToken)
             {
-                throw new NotImplementedException();
+                var now = DateTime.UtcNow;
+                var noveltyToUpdate = await _context.Novelties.SingleAsync(x => x.ID == novelty.ID, cancellationToken);
+                noveltyToUpdate.LastChanged = now;
+                noveltyToUpdate.Version++;
+                noveltyToUpdate.Name = novelty.Name;
+                noveltyToUpdate.Description = novelty.Description;
+
+                var changes = await _context.SaveChangesAsync(cancellationToken);
+
+                return changes >= 1;
             }
 
             public async Task<bool> TryAdd(NoveltyToAdd novelty, CancellationToken cancellationToken)

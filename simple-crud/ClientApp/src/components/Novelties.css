@@ -31,3 +31,12 @@ nav.pagination-container {
 ul.pagination > li.active {
     color: aqua;
 }
+
+div.delete-container {
+    display: inline;
+    margin-left: 1em;
+}
+
+div.delete-container :hover {
+    color: crimson;
+}

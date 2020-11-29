@@ -14,12 +14,7 @@ export function Novelties() {
 
     useEffect(() => {
         setIsLoading(true);
-
-        const promise2 = loadNoveltiesCount();
-        const promise3 = loadCurrentPage();
-        
-        Promise.all([promise2, promise3]).finally(() => setIsLoading(false));
-
+        Promise.all([loadNoveltiesCount(), loadCurrentPage()]).finally(() => setIsLoading(false));
     }, [currentPageNo])
 
     function onNoveltyClick(id: number) {
@@ -38,6 +33,25 @@ export function Novelties() {
         });
     }
 
+    async function onDelete(id: number, event: React.MouseEvent) {
+        event.stopPropagation();
+
+        await fetch(`novelty/${id}`, {
+            method: 'DELETE',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            }
+        })
+
+        setNovelties(prev => {
+            const toDeleteIndex = prev.findIndex(x => x.id === id);
+            prev.splice(toDeleteIndex, 1);
+
+            return [...prev];
+        })
+    }
+
     function getPaginationProps(): PaginationProps {
         return {
             pagesCount: pagesCount ?? 0,
@@ -47,12 +61,19 @@ export function Novelties() {
 
     function getNoveltyProps(novelty: NoveltyViewModel) : NoveltyProps {
         return {
-            id: novelty.id
+            id: novelty.id,
+            changeName: (name: string, lastChanged: Date) => setNovelties(prev => {
+                const noveltyToChange = prev.find(x => x.id === novelty.id);
+                noveltyToChange!.name = name;
+                noveltyToChange!.lastChanged = lastChanged;
+
+                return [...prev].sort((a, b) => new Date(b.lastChanged).getTime() - new Date(a.lastChanged).getTime());
+            })
         }
     }
 
     async function loadNoveltiesCount() {
-        const noveltiesCountResponse = await fetch('novelty/getcount');
+        const noveltiesCountResponse = await fetch('noveltyInfo/getcount');
         const noveltiesCount = await noveltiesCountResponse.json();
 
         const pagesCount = Math.ceil(noveltiesCount / noveltiesPerPage);
@@ -64,7 +85,7 @@ export function Novelties() {
         const take = encodeURIComponent(noveltiesPerPage);
         const offset = encodeURIComponent(noveltiesPerPage * (currentPageNo - 1));
 
-        const currentPageResponse = await fetch(`novelty/?take=${take}&offset=${offset}`);
+        const currentPageResponse = await fetch(`noveltyInfo/?take=${take}&offset=${offset}`);
         const currentPage: Array<NoveltyDto> = await currentPageResponse.json();
 
         const novelties = currentPage.map<NoveltyViewModel>(x => ({ ...x, expanded: expandedNovelties.has(x.id) }));
@@ -100,7 +121,12 @@ export function Novelties() {
                                     {novelty.name}
                             </div>
                             <div className="col-sm-3 list-last-col">
-                                    {novelty.lastChanged.toLocaleString()}
+                                    {novelty.lastChanged.toLocaleString('en-GB')}
+                                    <div className="delete-container" onClick={(event) => onDelete(novelty.id, event)}>
+                                        <svg width="1em" height="1em" viewBox="0 0 16 16" className="bi bi-trash-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                            <path fillRule="evenodd" d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5a.5.5 0 0 0-1 0v7a.5.5 0 0 0 1 0v-7z" />
+                                        </svg>
+                                    </div>
                             </div>
                             </div>
                         </div>
