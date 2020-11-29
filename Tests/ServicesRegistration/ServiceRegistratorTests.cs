@@ -8,8 +8,30 @@ namespace Tests.ServicesRegistration
 {
     public sealed class ServiceRegistratorTests
     {
-        [Test]
-        public void RegisterSingletons_ShouldProcessTypeWithProperAttribute()
+        public enum RegisterMethod
+        {
+            Singleton,
+            Transient
+        }
+
+        private static void Register(ServiceRegistrator registrator, Action<Type,Type> registrationStub, RegisterMethod registerMethod)
+        {
+            switch (registerMethod)
+            {
+                case RegisterMethod.Singleton:
+                    registrator.RegisterSingletons(registrationStub);
+                    return;
+                case RegisterMethod.Transient:
+                    registrator.RegisterTransient(registrationStub);
+                    return;
+                default:
+                    throw new ArgumentOutOfRangeException("Not supported method!");
+            }
+        }
+
+        [TestCase(RegisterMethod.Singleton)]
+        [TestCase(RegisterMethod.Transient)]
+        public void Register_ShouldProcessTypeWithProperAttribute(RegisterMethod registerMethod)
         {
             // Arrange
             var dummyClassRegisteredCount = 0;
@@ -23,14 +45,15 @@ namespace Tests.ServicesRegistration
             var serviceRegistrator = new ServiceRegistrator(typesProvider);
 
             // Act
-            serviceRegistrator.RegisterSingletons(RegisterStub);
+            Register(serviceRegistrator, RegisterStub, registerMethod);
 
             // Assert
             Assert.That(dummyClassRegisteredCount, Is.EqualTo(1));
         }
 
-        [Test]
-        public void RegisterSingletons_ShouldProcessTypeWithProperAttributeForDerivingClass()
+        [TestCase(RegisterMethod.Singleton)]
+        [TestCase(RegisterMethod.Transient)]
+        public void Register_ShouldProcessTypeWithProperAttributeForDerivingClass(RegisterMethod registerMethod)
         {
             // Arrange
             var dummyClassRegisteredCount = 0;
@@ -44,14 +67,15 @@ namespace Tests.ServicesRegistration
             var serviceRegistrator = new ServiceRegistrator(typesProvider);
 
             // Act
-            serviceRegistrator.RegisterSingletons(RegisterStub);
+            Register(serviceRegistrator, RegisterStub, registerMethod);
 
             // Assert
             Assert.That(dummyClassRegisteredCount, Is.EqualTo(1));
         }
-        
-        [Test]
-        public void RegisterSingletons_ShouldProcessTypeWithProperAttributeForInterfaceImplementingClass()
+
+        [TestCase(RegisterMethod.Singleton)]
+        [TestCase(RegisterMethod.Transient)]
+        public void Register_ShouldProcessTypeWithProperAttributeForInterfaceImplementingClass(RegisterMethod registerMethod)
         {
             // Arrange
             var dummyClassRegisteredCount = 0;
@@ -65,14 +89,15 @@ namespace Tests.ServicesRegistration
             var serviceRegistrator = new ServiceRegistrator(typesProvider);
 
             // Act
-            serviceRegistrator.RegisterSingletons(RegisterStub);
+            Register(serviceRegistrator, RegisterStub, registerMethod);
 
             // Assert
             Assert.That(dummyClassRegisteredCount, Is.EqualTo(1));
         }
 
-        [Test]
-        public void RegisterSingletons_ShouldThrowWhenClassDoesNotImplementGivenInterface()
+        [TestCase(RegisterMethod.Singleton)]
+        [TestCase(RegisterMethod.Transient)]
+        public void Register_ShouldThrowWhenClassDoesNotImplementGivenInterface(RegisterMethod registerMethod)
         {
             // Arrange
             var typesProvider = Substitute.For<ITypesProvider>();
@@ -81,12 +106,13 @@ namespace Tests.ServicesRegistration
 
             // Act
             // Assert
-            Assert.That(() => serviceRegistrator.RegisterSingletons((_, _2) => { }),
+            Assert.That(() => Register(serviceRegistrator, (toImplement, implementation) => { }, registerMethod),
                 Throws.InstanceOf<RegistrationException>());
         }
 
-        [Test]
-        public void RegisterSingletons_ShouldThrowWhenClassDoesNotDeriveFromDeclaredClass()
+        [TestCase(RegisterMethod.Singleton)]
+        [TestCase(RegisterMethod.Transient)]
+        public void Register_ShouldThrowWhenClassDoesNotDeriveFromDeclaredClass(RegisterMethod registerMethod)
         {
             // Arrange
             var typesProvider = Substitute.For<ITypesProvider>();
@@ -95,12 +121,13 @@ namespace Tests.ServicesRegistration
 
             // Act
             // Assert
-            Assert.That(() => serviceRegistrator.RegisterSingletons((_, _2) => { }),
+            Assert.That(() => Register(serviceRegistrator, (toImplement, implementation) => { }, registerMethod),
                 Throws.InstanceOf<RegistrationException>());
         }
 
-        [Test]
-        public void RegisterSingletons_ShouldThrowWhenClassDeclaredToImplementDerivingClass()
+        [TestCase(RegisterMethod.Singleton)]
+        [TestCase(RegisterMethod.Transient)]
+        public void Register_ShouldThrowWhenClassDeclaredToImplementDerivingClass(RegisterMethod registerMethod)
         {
             // Arrange
             var typesProvider = Substitute.For<ITypesProvider>();
@@ -109,14 +136,67 @@ namespace Tests.ServicesRegistration
 
             // Act
             // Assert
-            Assert.That(() => serviceRegistrator.RegisterSingletons((_, _2) => { }),
+            Assert.That(() => Register(serviceRegistrator, (toImplement, implementation) => { }, registerMethod),
                 Throws.InstanceOf<RegistrationException>());
+        }
+
+        [Test]
+        public void RegisterTransient_ShouldRegisterOnlyOwnComponents()
+        {
+            // Arrange
+            var typesProvider = Substitute.For<ITypesProvider>();
+            typesProvider.GetTypes().Returns(new[] { typeof(TransientNotSingletonClass).GetTypeInfo(), typeof(SingletonNotTransientClass).GetTypeInfo() });
+            var serviceRegistrator = new ServiceRegistrator(typesProvider);
+            var singletonsCount = 0;
+            var transientCount = 0;
+            void RegisterStub(Type toImplement, Type implementation)
+            {
+                if (implementation == typeof(SingletonNotTransientClass) && toImplement == typeof(SingletonNotTransientClass)) singletonsCount++;
+                if (implementation == typeof(TransientNotSingletonClass) && toImplement == typeof(TransientNotSingletonClass)) transientCount++;
+            }
+            
+            // Act
+            Register(serviceRegistrator, RegisterStub, RegisterMethod.Transient);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(singletonsCount, Is.EqualTo(0));
+                Assert.That(transientCount, Is.EqualTo(1));
+            });
+        }
+
+        [Test]
+        public void RegisterSingleton_ShouldRegisterOnlyOwnComponents()
+        {
+            // Arrange
+            var typesProvider = Substitute.For<ITypesProvider>();
+            typesProvider.GetTypes().Returns(new[] { typeof(TransientNotSingletonClass).GetTypeInfo(), typeof(SingletonNotTransientClass).GetTypeInfo() });
+            var serviceRegistrator = new ServiceRegistrator(typesProvider);
+            var singletonsCount = 0;
+            var transientCount = 0;
+            void RegisterStub(Type toImplement, Type implementation)
+            {
+                if (implementation == typeof(SingletonNotTransientClass) && toImplement == typeof(SingletonNotTransientClass)) singletonsCount++;
+                if (implementation == typeof(TransientNotSingletonClass) && toImplement == typeof(TransientNotSingletonClass)) transientCount++;
+            }
+
+            // Act
+            Register(serviceRegistrator, RegisterStub, RegisterMethod.Singleton);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(singletonsCount, Is.EqualTo(1));
+                Assert.That(transientCount, Is.EqualTo(0));
+            });
         }
 
         private interface IDummyClassImplementingInterface
         { }
 
         [Singleton(typeof(DummyClass))]
+        [Transient(typeof(DummyClass))]
         private class DummyClass
         { }
 
@@ -124,25 +204,38 @@ namespace Tests.ServicesRegistration
         { }
 
         [Singleton(typeof(DummyClass2))]
+        [Transient(typeof(DummyClass2))]
         private sealed class DummyClass3 : DummyClass2
         { }
 
         [Singleton(typeof(IDummyClassImplementingInterface))]
+        [Transient(typeof(IDummyClassImplementingInterface))]
         private sealed class DummyClassImplementingInterface : IDummyClassImplementingInterface
         { }
 
         [Singleton(typeof(IDummyClassImplementingInterface))]
+        [Transient(typeof(IDummyClassImplementingInterface))]
         private sealed class DummyClassNotImplementingInterface 
         { }
 
         [Singleton(typeof(DummyClass))]
+        [Transient(typeof(DummyClass))]
         private sealed class DummyClasNotDerivingFromDeclaredBase
         { }
 
         [Singleton(typeof(DummyClass4))]
+        [Transient(typeof(DummyClass4))]
         private class DummyClassDeclaringImplementationOfDerivingClass
         { }
 
         private sealed class DummyClass4 : DummyClassDeclaringImplementationOfDerivingClass { }
+
+        [Transient(typeof(TransientNotSingletonClass))]
+        private sealed class TransientNotSingletonClass
+        { }
+
+        [Singleton(typeof(SingletonNotTransientClass))]
+        private sealed class SingletonNotTransientClass
+        { }
     }
 }

@@ -28,6 +28,7 @@ namespace simple_crud
             var typesProvider = new DefaultTypesProvider();
             var serviceRegistrator = new ServiceRegistrator(typesProvider);
             serviceRegistrator.RegisterSingletons((toImplement, implementation) => services.AddSingleton(toImplement, implementation));
+            serviceRegistrator.RegisterTransient((toImplement, implementation) => services.AddTransient(toImplement, implementation));
             
             services.AddSpaStaticFiles(configuration =>
             {

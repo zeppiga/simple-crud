@@ -16,20 +16,31 @@ namespace simple_crud.ServicesRegistration
 
         public void RegisterSingletons(Action<Type,Type> register)
         {
-            var types = _typesProvider.GetTypes();
-            var singletonTypes = GetSingletons(types);
+            Register<SingletonAttribute>(register);
+        }
 
-            foreach (var (toImplement, implementation) in singletonTypes)
+        public void RegisterTransient(Action<Type, Type> register)
+        {
+            Register<TransientAttribute>(register);
+        }
+
+        private void Register<T>(Action<Type, Type> register) where T : RegistrationAttribute
+        {
+            var types = _typesProvider.GetTypes();
+            var typesToRegister = GetTypes<T>(types);
+
+            foreach (var (toImplement, implementation) in typesToRegister)
             {
                 register(toImplement, implementation);
             }
         }
 
-        private static IEnumerable<(Type toImplement, Type implementation)> GetSingletons(IEnumerable<TypeInfo> types)
+
+        private static IEnumerable<(Type toImplement, Type implementation)> GetTypes<T>(IEnumerable<TypeInfo> types) where T : RegistrationAttribute
         {
             foreach (var type in types)
             {
-                if (!(type.GetCustomAttribute(typeof(SingletonAttribute)) is SingletonAttribute attribute)) continue;
+                if (!(type.GetCustomAttribute(typeof(T)) is T attribute)) continue;
 
                 if (!type.IsClass) throw new RegistrationException(type);
                 if (!type.ImplementedInterfaces.Contains(attribute.ExportType) && !attribute.ExportType.IsAssignableFrom(type)) throw new RegistrationException(type);
