@@ -9,3 +9,20 @@ div.list-container {
 div.list-button {
     cursor: pointer;
 }
+
+div.list-last-col {
+    text-align: right;
+}
+
+div.list-button > div.list-last-col {
+    padding-right: 0;
+}
+
+ul.pagination {
+    margin-top: 1em;
+    display: inline-flex;
+}
+
+nav.pagination-container {
+    text-align: center;
+}
