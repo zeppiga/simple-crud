@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using simple_crud.ApplicationConfiguration;
+using simple_crud.Logging;
 using simple_crud.ServicesRegistration;
 
 namespace simple_crud
@@ -48,6 +49,7 @@ namespace simple_crud
             }
 
             app.UseHttpsRedirection();
+            app.UseLoggingMiddleware();
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
 
