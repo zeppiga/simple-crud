@@ -8,27 +8,6 @@ namespace Tests.ServicesRegistration
 {
     public sealed class ServiceRegistratorTests
     {
-        public enum RegisterMethod
-        {
-            Singleton,
-            Transient
-        }
-
-        private static void Register(ServiceRegistrator registrator, Action<Type,Type> registrationStub, RegisterMethod registerMethod)
-        {
-            switch (registerMethod)
-            {
-                case RegisterMethod.Singleton:
-                    registrator.RegisterSingletons(registrationStub);
-                    return;
-                case RegisterMethod.Transient:
-                    registrator.RegisterTransient(registrationStub);
-                    return;
-                default:
-                    throw new ArgumentOutOfRangeException("Not supported method!");
-            }
-        }
-
         [TestCase(RegisterMethod.Singleton)]
         [TestCase(RegisterMethod.Transient)]
         public void Register_ShouldProcessTypeWithProperAttribute(RegisterMethod registerMethod)
@@ -190,6 +169,26 @@ namespace Tests.ServicesRegistration
                 Assert.That(singletonsCount, Is.EqualTo(1));
                 Assert.That(transientCount, Is.EqualTo(0));
             });
+        }
+        public enum RegisterMethod
+        {
+            Singleton,
+            Transient
+        }
+
+        private static void Register(ServiceRegistrator registrator, Action<Type, Type> registrationStub, RegisterMethod registerMethod)
+        {
+            switch (registerMethod)
+            {
+                case RegisterMethod.Singleton:
+                    registrator.RegisterSingletons(registrationStub);
+                    return;
+                case RegisterMethod.Transient:
+                    registrator.RegisterTransient(registrationStub);
+                    return;
+                default:
+                    throw new ArgumentOutOfRangeException("Not supported method!");
+            }
         }
 
         private interface IDummyClassImplementingInterface

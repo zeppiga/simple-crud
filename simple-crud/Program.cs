@@ -24,6 +24,16 @@ namespace simple_crud
             host.Run();
         }
 
+        private static IHostBuilder CreateHostBuilder(string[] args)
+        {
+            var builder = Host.CreateDefaultBuilder(args)
+                .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); })
+                .ConfigureLogging(ConfigureLogging)
+                .ConfigureServices(ConfigureServices);
+
+            return builder;
+        }
+
         private static void InitializaDb(IHost host)
         {
             using var scope = host.Services.CreateScope();
@@ -40,16 +50,6 @@ namespace simple_crud
             {
                 logger.LogError(ex, "Exception raised during database initialization!");
             }
-        }
-
-        public static IHostBuilder CreateHostBuilder(string[] args)
-        {
-            var builder = Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); })
-                .ConfigureLogging(ConfigureLogging)
-                .ConfigureServices(ConfigureServices);
-
-            return builder;
         }
 
         private static void ConfigureServices(IServiceCollection serviceCollection)
