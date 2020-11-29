@@ -94,7 +94,7 @@ export function Novelties() {
                         <div className="card-header" id="headingOne">
                             <div className="list-button row" onClick={() => onNoveltyClick(novelty.id)}>
                             <div className="col-sm-1">
-                                    {index}
+                                    {index+1}
                             </div>
                             <div className="col-sm-8">
                                     {novelty.name}

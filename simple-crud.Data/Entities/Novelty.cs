@@ -7,12 +7,12 @@ namespace simple_crud.Data.Entities
     public interface INovelty
     {
         int ID { get; }
+        string Name { get; }
+        string Description { get; }
         int Version { get; }
-        string Name { get; set; }
-        string Description { get; set; }
         DateTime Created { get; }
         DateTime LastChanged { get; }
-        ICollection<File> Files { get; set; }
+        ICollection<File> Files { get; }
     }
 
     public class Novelty : INovelty
