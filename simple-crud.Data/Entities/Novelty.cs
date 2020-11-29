@@ -4,7 +4,18 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace simple_crud.Data.Entities
 {
-    public class Novelty
+    public interface INovelty
+    {
+        int ID { get; }
+        int Version { get; }
+        string Name { get; set; }
+        string Description { get; set; }
+        DateTime Created { get; }
+        DateTime LastChanged { get; }
+        ICollection<File> Files { get; set; }
+    }
+
+    public class Novelty : INovelty
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ID { get; set; }

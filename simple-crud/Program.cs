@@ -19,7 +19,7 @@ namespace simple_crud
         public static void Main(string[] args)
         {
             var host = CreateHostBuilder(args).Build();
-            InitializaDb(host);
+            InitializeDb(host);
 
             host.Run();
         }
@@ -34,7 +34,7 @@ namespace simple_crud
             return builder;
         }
 
-        private static void InitializaDb(IHost host)
+        private static void InitializeDb(IHost host)
         {
             using var scope = host.Services.CreateScope();
             var services = scope.ServiceProvider;
