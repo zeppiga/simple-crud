@@ -34,6 +34,20 @@ namespace simple_crud
             return builder;
         }
 
+        private static void ConfigureServices(IServiceCollection serviceCollection)
+        {
+            if (ApplicationConfiguration.AzureLoggingEnabled)
+                serviceCollection.Configure<AzureFileLoggerOptions>(options =>
+                {
+                    options.FileName = "azure-diagnostics-";
+                    options.FileSizeLimit = 50 * 1024;
+                    options.RetainedFileCountLimit = 5;
+                });
+
+            serviceCollection.AddSwaggerGen();
+            serviceCollection.AddDbContext<NoveltyContext>(options => options.UseSqlServer(ApplicationConfiguration.ConnectionString));
+        }
+
         private static void InitializeDb(IHost host)
         {
             using var scope = host.Services.CreateScope();
@@ -50,19 +64,6 @@ namespace simple_crud
             {
                 logger.LogError(ex, "Exception raised during database initialization!");
             }
-        }
-
-        private static void ConfigureServices(IServiceCollection serviceCollection)
-        {
-            if (ApplicationConfiguration.AzureLoggingEnabled)
-                serviceCollection.Configure<AzureFileLoggerOptions>(options =>
-                {
-                    options.FileName = "azure-diagnostics-";
-                    options.FileSizeLimit = 50 * 1024;
-                    options.RetainedFileCountLimit = 5;
-                });
-
-            serviceCollection.AddDbContext<NoveltyContext>(options => options.UseSqlServer(ApplicationConfiguration.ConnectionString));
         }
 
         private static void ConfigureLogging(ILoggingBuilder logging)

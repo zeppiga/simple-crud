@@ -51,6 +51,11 @@ namespace simple_crud
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
 
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
+            });
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>

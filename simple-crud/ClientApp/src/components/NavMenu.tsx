@@ -6,8 +6,13 @@ import './NavMenu.css';
 export function NavMenu() {
   const [collapsed, setCollapsed] = useState(true);
 
+  // todo
   function toggleNavbar() {
     setCollapsed(prev => !prev);
+  }
+
+  function goToSwaggerPortal() {
+    window.location.replace("/swagger");
   }
 
   return (
@@ -15,7 +20,6 @@ export function NavMenu() {
          <Navbar className="navbar-expand-sm navbar-toggleable-sm ng-white border-bottom box-shadow mb-3" light>
            <Container>
              <NavbarBrand tag={Link} to="/">simple_crud</NavbarBrand>
-             {/* navbar toggler todo */}
              <NavbarToggler onClick={toggleNavbar} className="mr-2" /> 
              <Collapse className="d-sm-inline-flex flex-sm-row-reverse" isOpen={!collapsed} navbar>
                <ul className="navbar-nav flex-grow">
@@ -27,6 +31,9 @@ export function NavMenu() {
                  </NavItem>
                  <NavItem>
                    <NavLink tag={Link} className="text-dark" to="/novelties">List of novelties</NavLink>
+                 </NavItem>
+                 <NavItem>
+                   <NavLink tag={Link} className="text-dark" onClick={goToSwaggerPortal}>Swagger UI</NavLink>
                  </NavItem>
                </ul>
              </Collapse>
