@@ -16,7 +16,9 @@ export function Alert(props: AlertProps) {
     
     useEffect(() => {
         if (!props.doNotHide && props.show) {
-            setTimeout(props.onAlertClose, 1000 * defaultHideTimeInSeconds!)
+            const timeout = setTimeout(props.onAlertClose, 1000 * defaultHideTimeInSeconds!)
+
+            return () => clearTimeout(timeout);
         }
     }, [props.show, props.doNotHide, props.onAlertClose]);
 

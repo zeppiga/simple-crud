@@ -12,7 +12,7 @@ export function NavMenu() {
   }
 
   function goToSwaggerPortal() {
-    window.location.replace("/swagger");
+    window.location.replace("/swagger/index.html");
   }
 
   return (

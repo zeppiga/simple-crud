@@ -42,7 +42,7 @@ export function Novelty(props: NoveltyProps) {
         setIsLoading(true);
         const body = {name: novelty.name, description: novelty.description};
         
-        const noveltyRepsonse = await put(`novelty/${novelty.id}`, body)
+        const noveltyRepsonse = await put(`novelty/${novelty.id}`, body);
 
         if (noveltyRepsonse.statusCode !== 200) {
             setIsErroneous(true);
@@ -52,9 +52,9 @@ export function Novelty(props: NoveltyProps) {
 
         const responseNovelty = noveltyRepsonse.contents;
         setNovelty(responseNovelty);
-        props.onChange(responseNovelty.name, responseNovelty.lastChanged);
         setDraftNovelty(null);
         setIsLoading(false);
+        props.onChange(responseNovelty.name, responseNovelty.lastChanged);
     }
 
     useEffect(() => {
