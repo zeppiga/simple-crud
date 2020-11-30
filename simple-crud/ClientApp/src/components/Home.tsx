@@ -11,7 +11,7 @@ export function Home() {
         <li><a href='http://getbootstrap.com/'>Bootstrap</a> for layout and styling</li>
         <li><a href='https://azure.microsoft.com/'>Azure</a> infrastructure for hosting an application</li>
         <li><a href='https://www.microsoft.com/en-us/sql-server/'>Microsoft SQL Server</a> for data keeping</li>
-        TODO other
+        <li><a href='https://www.nuget.org/packages/Swashbuckle/'>Swashbuckle</a> for api documentation generation</li>
       </ul>
     </div>
   );
