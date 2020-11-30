@@ -63,6 +63,7 @@ namespace simple_crud
             catch (Exception ex)
             {
                 logger.LogError(ex, "Exception raised during database initialization!");
+                throw;
             }
         }
 

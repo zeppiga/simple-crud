@@ -12,9 +12,18 @@ namespace simple_crud.Data.DatabaseInitializer
     {
         public static async Task Initialize(NoveltyContext context, ILogger logger, CancellationToken cancellationToken = default)
         {
-            logger.LogInformation("Preparing for database initialization..");
+            try
+            {
+                await context.Database.EnsureCreatedAsync(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                throw new CouldNotConnectToDbException(
+                    "Unable to connect to database. Ensure the provided connection string is valid and database is responding.",
+                    ex);
+            }
 
-            await context.Database.EnsureCreatedAsync(cancellationToken);
+            logger.LogInformation("Preparing for database initialization..");
 
             if (context.Novelties.Any())
             {
