@@ -33,6 +33,7 @@ export function Pagination(props: PaginationProps) {
         props.setCurrentPageNo(pageNo)
     }
 
+    // TODO keyboard navigation is broken
     return (
         <nav className="pagination-container">
         <ul className="pagination">

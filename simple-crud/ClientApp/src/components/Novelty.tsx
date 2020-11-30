@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { get, put } from '../rest';
+import { LoadableContainer } from "./LoadableContainer";
 
 export interface NoveltyProps {
     id : number;
@@ -52,6 +53,7 @@ export function Novelty(props: NoveltyProps) {
         const responseNovelty = noveltyRepsonse.contents;
         setNovelty(responseNovelty);
         props.onChange(responseNovelty.name, responseNovelty.lastChanged);
+        setDraftNovelty(null);
         setIsLoading(false);
     }
 
@@ -85,11 +87,9 @@ export function Novelty(props: NoveltyProps) {
     if(isErroneous) {
         return <div>Error occured.</div>
     }
-    else if(isLoading) {
-        return <div>loadin'...</div>;
-    }
+    
     else {
-        return <div>
+        return <LoadableContainer {...{isLoading: isLoading}}>
             {isEditMode ? <div className="row justify-content-end">
                     <div className="col-sm-1">
                         <input className="btn btn-primary" type="button" value="Save" onClick={onSave}></input>
@@ -106,7 +106,7 @@ export function Novelty(props: NoveltyProps) {
             <div className="row">
                 <div className="col-sm-12">
                 {isEditMode ? <textarea className="form-control" rows={1} onChange={onNameChanged} value={draftNovelty!.name}></textarea>
-                    : <div onClick={onPropertyClick} >{novelty!.created}</div>}
+                    : <div onClick={onPropertyClick} >{novelty?.created}</div>}
                 </div>
             </div>
             <div className="row">
@@ -117,9 +117,9 @@ export function Novelty(props: NoveltyProps) {
             <div className="row">
                 <div className="col-sm-12">
                 {isEditMode ? <textarea className="form-control" rows={2} onChange={onDescriptionChanged} value={draftNovelty!.description}></textarea>
-                : <div onClick={onPropertyClick}>{novelty!.description}</div>}
+                : <div onClick={onPropertyClick}>{novelty?.description}</div>}
                 </div>
             </div>
-        </div>
+        </LoadableContainer>
     }
 }

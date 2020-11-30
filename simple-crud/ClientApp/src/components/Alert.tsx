@@ -18,7 +18,7 @@ export function Alert(props: AlertProps) {
         if (!props.doNotHide && props.show) {
             setTimeout(props.onAlertClose, 1000 * defaultHideTimeInSeconds!)
         }
-    }, [props.show]);
+    }, [props.show, props.doNotHide, props.onAlertClose]);
 
     return  <div className={alertClassName} role="alert">
         {props.message}

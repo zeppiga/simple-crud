@@ -47,7 +47,11 @@ export function del(url: string) {
 
 async function request(url: string, options?: any): Promise<ResponseData> {
     const response = await fetch(url, options);
-    const body = await response.json();
+    
+    let body: any = null;
+    if (response.status !== 204) {
+      body = await response.json(); 
+    }
 
     return ({statusCode: response.status, contents: body});
 }

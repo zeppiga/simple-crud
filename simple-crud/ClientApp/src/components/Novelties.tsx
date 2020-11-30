@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Pagination, PaginationProps } from "./Pagination"
 import { Novelty, NoveltyProps } from "./Novelty";
 import { Alert, AlertType } from "./Alert";
-import './Novelties.css';
 import { del, get } from "../rest";
+import { LoadableContainer } from "./LoadableContainer";
+import './Novelties.css';
 
 const noveltiesPerPage = 10;
 const expandedNovelties = new Set<number>();
@@ -38,6 +39,7 @@ export function Novelties() {
 
     async function onDelete(id: number, event: React.MouseEvent) {
         event.stopPropagation();
+        setIsLoading(true);
 
         const response = await del(`novelty/${id}`)
 
@@ -53,6 +55,7 @@ export function Novelties() {
             return [...prev];
         });
 
+        setIsLoading(false);
         setAlertState({ show: true, alertType: AlertType.Info, message: `Novelty ${id} was sucessfully deleted.` })
     }
 
@@ -109,9 +112,7 @@ export function Novelties() {
     }
 
     return (
-        <>
-        {
-            isLoading ? <div> loadin...</div> :        
+        <LoadableContainer {...{isLoading: isLoading}}>
         <div className="list-container">
             <Alert {...getAlertProps(alertState)}></Alert>
             <div className="row list-header">
@@ -157,9 +158,8 @@ export function Novelties() {
         )}
         </div>
         </div>
-        }
         <Pagination {...getPaginationProps()} />
-        </>
+        </LoadableContainer>
       );
 }
 
