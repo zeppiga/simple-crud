@@ -5,7 +5,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using simple_crud.ApplicationConfiguration;
-using simple_crud.Logging;
 using simple_crud.Middleware;
 using simple_crud.ServicesRegistration;
 

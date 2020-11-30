@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
-namespace simple_crud.Logging
+namespace simple_crud.Middleware
 {
     public sealed class LoggingMiddleware
     {

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 
-namespace simple_crud.Logging
+namespace simple_crud.Middleware
 {
     public static class LoggingMiddlewareExtensions
     {
