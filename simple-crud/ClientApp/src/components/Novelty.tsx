@@ -18,9 +18,17 @@ export function Novelty(props: NoveltyProps) {
     const [novelty, setNovelty] = useState<NoveltyDetailed | null>(null);
     const [draftNovelty, setDraftNovelty] = useState<NoveltyDetailed | null>(null);
     const [isEditMode, setIsEditMode] = useState(false);
+    const [isErroneous, setIsErroneous] = useState(false);
 
     async function loadNovelty(id: number) {
         const noveltyResponse = await fetch(`novelty/${id}`);
+
+        if (noveltyResponse.status !== 200) {
+            setIsErroneous(true);
+            setIsLoading(false);
+            return;
+        }
+
         const novelty: NoveltyDetailed = await noveltyResponse.json();
 
         setNovelty(novelty);
@@ -40,6 +48,12 @@ export function Novelty(props: NoveltyProps) {
             },
             body: JSON.stringify(body)
         })
+
+        if (noveltyRepsonse.status !== 200) {
+            setIsErroneous(true);
+            setIsLoading(false);
+            return;
+        }
 
         const responseNovelty = await noveltyRepsonse.json();
         setNovelty(responseNovelty);
@@ -74,7 +88,10 @@ export function Novelty(props: NoveltyProps) {
         setDraftNovelty(prev => ({...prev, description: value} as NoveltyDetailed | null));
     }
 
-    if(isLoading) {
+    if(isErroneous) {
+        return <div>Error occured.</div>
+    }
+    else if(isLoading) {
         return <div>loadin'...</div>;
     }
     else {

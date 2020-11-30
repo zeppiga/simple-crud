@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Pagination, PaginationProps } from "./Pagination"
 import { Novelty, NoveltyProps } from "./Novelty";
-import { Alert } from "./Alert";
+import { Alert, AlertType } from "./Alert";
 import './Novelties.css';
 
 const noveltiesPerPage = 10;
@@ -12,7 +12,7 @@ export function Novelties() {
     const [novelties, setNovelties] = useState(Array<NoveltyViewModel>(0));
     const [isLoading, setIsLoading] = useState(false);
     const [pagesCount, setPagesCount] = useState(null as number | null)
-    const [alertState, setAlertState] = useState({show: false, message: ""});
+    const [alertState, setAlertState] = useState({show: false, alertType: AlertType.Info, message: ""});
 
     useEffect(() => {
         setIsLoading(true);
@@ -38,13 +38,18 @@ export function Novelties() {
     async function onDelete(id: number, event: React.MouseEvent) {
         event.stopPropagation();
 
-        await fetch(`novelty/${id}`, {
+        const response = await fetch(`novelty/${id}`, {
             method: 'DELETE',
             headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json'
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
             }
         })
+
+        if (response.status !== 204) {
+            setAlertState({ show: true, alertType: AlertType.Error, message: "Failed to delete novelty." })
+            return;
+        }
 
         setNovelties(prev => {
             const toDeleteIndex = prev.findIndex(x => x.id === id);
@@ -53,7 +58,7 @@ export function Novelties() {
             return [...prev];
         });
 
-        setAlertState({show: true, message: "Novelty was sucessfully deleted."})
+        setAlertState({ show: true, alertType: AlertType.Info, message: `Novelty ${id} was sucessfully deleted.` })
     }
 
     function getOnModify(novelty: NoveltyViewModel) {
@@ -66,7 +71,7 @@ export function Novelties() {
                 return [...prev].sort((a, b) => new Date(b.lastChanged).getTime() - new Date(a.lastChanged).getTime());
             });
 
-            setAlertState({ show: true, message: "Novelty was sucessfully modified." })
+            setAlertState({ show: true, alertType: AlertType.Info, message: "Novelty was sucessfully modified." })
         };
     }
 
@@ -104,8 +109,8 @@ export function Novelties() {
         setNovelties(novelties);
     }
 
-    function getAlertProps(alertState: {show: boolean, message: string}) {
-        return {show: alertState.show, message:alertState.message, hideAfterSeconds: 2, onAlertClose: () => setAlertState(prev => ({...prev, show: false}))};
+    function getAlertProps(alertState: {show: boolean, message: string, alertType: AlertType}) {
+        return {show: alertState.show, alertType: alertState.alertType, message:alertState.message, onAlertClose: () => setAlertState(prev => ({...prev, show: false}))};
     }
 
     return (
@@ -116,7 +121,7 @@ export function Novelties() {
             <Alert {...getAlertProps(alertState)}></Alert>
             <div className="row list-header">
                 <div className="col-sm-1">
-                    No.
+                    Id
                 </div>
                 <div className="col-sm-8">
                     Name
@@ -132,7 +137,7 @@ export function Novelties() {
                         <div className="card-header" id="headingOne">
                             <div className="list-button row" onClick={() => onNoveltyClick(novelty.id)}>
                             <div className="col-sm-1">
-                                    {index+1}
+                                    {novelty.id}
                             </div>
                             <div className="col-sm-8">
                                     {novelty.name}
@@ -161,11 +166,6 @@ export function Novelties() {
         <Pagination {...getPaginationProps()} />
         </>
       );
-}
-
-
-interface NoveltyDetailedDto extends NoveltyDto {
-    description: string;
 }
 
 interface NoveltyViewModel extends NoveltyDto {

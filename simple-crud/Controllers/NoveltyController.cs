@@ -1,8 +1,8 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using simple_crud.Data;
 using simple_crud.DTO;
 
@@ -22,56 +22,73 @@ namespace simple_crud.Controllers
         }
 
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Route("{id}")]
         public async Task<IActionResult> Get(int id, CancellationToken cancellationToken)
         {
-            var novelty = await ExecuteActionInRepositoryContext(() => _repository.GetAsync(id, cancellationToken));
+            var novelty = await _repository.GetAsync(id, cancellationToken);
+
+            if (novelty == null)
+                return NotFound($"No novelty with id: {id} was found.");
+
             return Ok(novelty);
         }
 
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [Route("add")]
         public async Task<IActionResult> Add([FromBody] NoveltyToAddDto dto, CancellationToken cancellationToken)
         {
-            var noveltyToAdd = new NoveltyToAdd(dto.Name, dto.Description);
-            var result = await ExecuteActionInRepositoryContext(() => _repository.TryAdd(noveltyToAdd, cancellationToken));
+            if (string.IsNullOrEmpty(dto.Name) || string.IsNullOrEmpty(dto.Description))
+                return BadRequest("Cannot create novelty without name or description!");
 
-            return Ok(result);
+            var noveltyToAdd = new NoveltyToAdd(dto.Name, dto.Description);
+            var result = await _repository.TryAdd(noveltyToAdd, cancellationToken);
+
+            if (!result.Succeeded)
+            {
+                _logger.LogError($"Failed to create novelty. Reason: {result.FailureReason}.");
+                return BadRequest("Novelty creation was unsuccessful.");
+            }
+
+            return Created($"novelty/{result.AddedItem.ID}", new object());
         }
     
         [HttpPut]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [Route("{id}")]
         public async Task<IActionResult> Modify(int id, [FromBody] NoveltyToAddDto dto, CancellationToken cancellationToken)
         {
             var noveltyToAdd = new NoveltyToAdd(dto.Name, dto.Description, id);
-            var _ = await _repository.TryUpdate(noveltyToAdd, cancellationToken);
+            var result = await _repository.TryUpdate(noveltyToAdd, cancellationToken);
 
-            var novelty = await _repository.GetAsync(id, cancellationToken);
+            if (!result.Succeeded)
+            {
+                _logger.LogError($"Failed to modify novelty with id: {id}. Reason: {result.FailureReason}.");
+                return BadRequest("Novelty modification was unsuccessful.");
+            }
 
-            return Ok(novelty);
+            return Ok(result.AddedItem);
         }
 
         [HttpDelete]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [Route("{id}")]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
-            var _ = await _repository.TryRemove(id, cancellationToken);
+            var result = await _repository.TryRemove(id, cancellationToken);
 
-            return Ok();
-        }
+            if (!result)
+            {
+                _logger.LogError($"Failed to delete novelty with id: {id}.");
+                return BadRequest("Novelty deletion was unsuccessful.");
+            }
 
-        private async Task<T> ExecuteActionInRepositoryContext<T>(Func<Task<T>> action)
-        {
-            try
-            {
-                var result = await action();
-                return result;
-            }
-            catch (NoveltyRepositoryException ex)
-            {
-                _logger.LogError(ex, "Exception was raised during request handling!");
-                throw;
-            }
+            return NoContent();
         }
     }
 }

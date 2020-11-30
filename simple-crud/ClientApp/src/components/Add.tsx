@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Alert, AlertProps } from "./Alert";
+import { Alert, AlertType } from "./Alert";
 
 export function Add() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [showAlert, setShowAlert] = useState(false);
+  const [alertState, setAlertState] = useState({show: false, alertType: AlertType.Info, message: ""});
 
   function handleSubmit(event: any) {
     setIsLoading(true);
@@ -16,9 +16,16 @@ export function Add() {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({name, description})
-    }).then(() => {
-      setShowAlert(true);
+      body: JSON.stringify({ name, description })
+    }).then(res => {
+
+      if (res.status !== 201) {
+        setAlertState({ show: true, alertType: AlertType.Error, message: "Failed to add novelty." })
+        setIsLoading(false);
+        return;
+      }
+
+      setAlertState({ show: true, alertType: AlertType.Info, message: "You novelty was successfully saved." })
       setIsLoading(false);
     })
 
@@ -39,16 +46,15 @@ export function Add() {
     return <div>loading...</div>
   }
 
-  function getAlertState(show: boolean) {
+  function getAlertState(alertState: {show: boolean, alertType: AlertType, message: string}) {
       return {
-        show: showAlert, message:"Your novelty was sucessfully added!", hideAfterSeconds: 10, onAlertClose: () => setShowAlert(false)
+        show: alertState.show, message: alertState.message, alertType: alertState.alertType, onAlertClose: () => setAlertState(prev => ({...prev, show: false}))
       }
   }
 
   return (
     <>
-      {/* <Alert {...{show: showAlert, message:"Your novelty was sucessfully added!", hideAfterSeconds: 2, onAlertClose: () => setShowAlert(false)}}></Alert> */}
-      <Alert {...getAlertState(showAlert)}></Alert>
+      <Alert {...getAlertState(alertState)}></Alert>
       <form onSubmit={handleSubmit}>
     <div className="form-group">
       <label>Name of your awesome novelty</label>

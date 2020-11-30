@@ -1,19 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import "./Alert.css";
 
 export interface AlertProps {
+    alertType: AlertType;
     message: string;
     show: boolean;
-    hideAfterSeconds?: number;
+    doNotHide?: number;
     onAlertClose: () => void;
 }
 
+const defaultHideTimeInSeconds = 10;
+
 export function Alert(props: AlertProps) {
-    const alertClassName = props.show ? visibleButtonClassName : invisibleButtonClassName;
+    const alertClassName = getAlerClassName(props.alertType, props.show);
     
     useEffect(() => {
-        if (props.hideAfterSeconds && props.show) {
-            setTimeout(props.onAlertClose, 1000 * props.hideAfterSeconds!)
+        if (!props.doNotHide && props.show) {
+            setTimeout(props.onAlertClose, 1000 * defaultHideTimeInSeconds!)
         }
     }, [props.show]);
 
@@ -25,5 +28,20 @@ export function Alert(props: AlertProps) {
   </div>
 }
 
-const visibleButtonClassName = "alert alert-info alert-dismissible fade show";
-const invisibleButtonClassName = visibleButtonClassName + " invisible";
+export enum AlertType {
+    Info,
+    Error
+}
+
+function getAlerClassName(type: AlertType, visible: boolean) {
+    if (!visible) {
+        return "alert fade show invisible";
+    }
+
+    switch(type) {
+        case AlertType.Info:
+            return "alert alert-info alert-dismissible fade show";
+        case AlertType.Error:
+            return "alert alert-danger alert-dismissible fade show";
+    }
+}
