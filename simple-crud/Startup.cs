@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using simple_crud.ApplicationConfiguration;
 using simple_crud.Logging;
+using simple_crud.Middleware;
 using simple_crud.ServicesRegistration;
 
 namespace simple_crud
@@ -43,8 +44,7 @@ namespace simple_crud
                 app.UseDeveloperExceptionPage();
             else
             {
-                app.UseExceptionHandler("/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+                app.UseExceptionHandler(ExceptionHandler.Handle);
                 app.UseHsts();
             }
 
