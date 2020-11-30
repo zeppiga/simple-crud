@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { get, put } from '../rest';
 
 export interface NoveltyProps {
     id : number;
@@ -21,15 +22,15 @@ export function Novelty(props: NoveltyProps) {
     const [isErroneous, setIsErroneous] = useState(false);
 
     async function loadNovelty(id: number) {
-        const noveltyResponse = await fetch(`novelty/${id}`);
+        const noveltyResponse = await get(`novelty/${id}`);
 
-        if (noveltyResponse.status !== 200) {
+        if (noveltyResponse.statusCode !== 200) {
             setIsErroneous(true);
             setIsLoading(false);
             return;
         }
 
-        const novelty: NoveltyDetailed = await noveltyResponse.json();
+        const novelty: NoveltyDetailed = noveltyResponse.contents;
 
         setNovelty(novelty);
         setIsLoading(false);
@@ -40,22 +41,15 @@ export function Novelty(props: NoveltyProps) {
         setIsLoading(true);
         const body = {name: novelty.name, description: novelty.description};
         
-        const noveltyRepsonse = await fetch(`novelty/${novelty.id}`, {
-            method: 'PUT',
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(body)
-        })
+        const noveltyRepsonse = await put(`novelty/${novelty.id}`, body)
 
-        if (noveltyRepsonse.status !== 200) {
+        if (noveltyRepsonse.statusCode !== 200) {
             setIsErroneous(true);
             setIsLoading(false);
             return;
         }
 
-        const responseNovelty = await noveltyRepsonse.json();
+        const responseNovelty = noveltyRepsonse.contents;
         setNovelty(responseNovelty);
         props.onChange(responseNovelty.name, responseNovelty.lastChanged);
         setIsLoading(false);

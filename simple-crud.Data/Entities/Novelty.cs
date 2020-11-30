@@ -29,6 +29,8 @@ namespace simple_crud.Data.Entities
 
         public DateTime LastChanged { get; set; }
 
+        //TODO
+
         public ICollection<File> Files { get; set; }
     }
 }

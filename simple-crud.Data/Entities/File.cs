@@ -2,6 +2,7 @@
 
 namespace simple_crud.Data.Entities
 {
+    // TODO
     public class File
     {
         public int ID { get; set; }

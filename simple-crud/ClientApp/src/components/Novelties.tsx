@@ -3,6 +3,7 @@ import { Pagination, PaginationProps } from "./Pagination"
 import { Novelty, NoveltyProps } from "./Novelty";
 import { Alert, AlertType } from "./Alert";
 import './Novelties.css';
+import { del, get } from "../rest";
 
 const noveltiesPerPage = 10;
 const expandedNovelties = new Set<number>();
@@ -38,15 +39,9 @@ export function Novelties() {
     async function onDelete(id: number, event: React.MouseEvent) {
         event.stopPropagation();
 
-        const response = await fetch(`novelty/${id}`, {
-            method: 'DELETE',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
-        })
+        const response = await del(`novelty/${id}`)
 
-        if (response.status !== 204) {
+        if (response.statusCode !== 204) {
             setAlertState({ show: true, alertType: AlertType.Error, message: "Failed to delete novelty." })
             return;
         }
@@ -90,8 +85,8 @@ export function Novelties() {
     }
 
     async function loadNoveltiesCount() {
-        const noveltiesCountResponse = await fetch('noveltyInfo/getcount');
-        const noveltiesCount = await noveltiesCountResponse.json();
+        const noveltiesCountResponse = await get('noveltyInfo/getcount');
+        const noveltiesCount = noveltiesCountResponse.contents
 
         const pagesCount = Math.ceil(noveltiesCount / noveltiesPerPage);
 
@@ -102,8 +97,8 @@ export function Novelties() {
         const take = encodeURIComponent(noveltiesPerPage);
         const offset = encodeURIComponent(noveltiesPerPage * (currentPageNo - 1));
 
-        const currentPageResponse = await fetch(`noveltyInfo/?take=${take}&offset=${offset}`);
-        const currentPage: Array<NoveltyDto> = await currentPageResponse.json();
+        const currentPageResponse = await get(`noveltyInfo/?take=${take}&offset=${offset}`);
+        const currentPage: Array<NoveltyDto> = await currentPageResponse.contents;
 
         const novelties = currentPage.map<NoveltyViewModel>(x => ({ ...x, expanded: expandedNovelties.has(x.id) }));
         setNovelties(novelties);

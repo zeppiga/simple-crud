@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Alert, AlertType } from "./Alert";
+import { LoadableContainer } from "./LoadableContainer";
+import { post } from "../rest";
 
 export function Add() {
   const [name, setName] = useState("");
@@ -10,24 +12,18 @@ export function Add() {
   function handleSubmit(event: any) {
     setIsLoading(true);
 
-    fetch('novelty/add', {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ name, description })
-    }).then(res => {
+    post('novelty/add', { name, description })
+      .then(res => {
 
-      if (res.status !== 201) {
-        setAlertState({ show: true, alertType: AlertType.Error, message: "Failed to add novelty." })
+        if (res.statusCode !== 201) {
+          setAlertState({ show: true, alertType: AlertType.Error, message: "Failed to add novelty. " + res.contents })
+          setIsLoading(false);
+          return;
+        }
+
+        setAlertState({ show: true, alertType: AlertType.Info, message: "You novelty was successfully saved." })
         setIsLoading(false);
-        return;
-      }
-
-      setAlertState({ show: true, alertType: AlertType.Info, message: "You novelty was successfully saved." })
-      setIsLoading(false);
-    })
+      });
 
     event.preventDefault();
   }
@@ -42,10 +38,6 @@ export function Add() {
     setDescription(value);
   }
 
-  if (isLoading) {
-    return <div>loading...</div>
-  }
-
   function getAlertState(alertState: {show: boolean, alertType: AlertType, message: string}) {
       return {
         show: alertState.show, message: alertState.message, alertType: alertState.alertType, onAlertClose: () => setAlertState(prev => ({...prev, show: false}))
@@ -53,7 +45,7 @@ export function Add() {
   }
 
   return (
-    <>
+    <LoadableContainer {...{isLoading: isLoading}}>
       <Alert {...getAlertState(alertState)}></Alert>
       <form onSubmit={handleSubmit}>
     <div className="form-group">
@@ -67,6 +59,6 @@ export function Add() {
     </div>
     <button type="submit" className="btn btn-primary">Add your awesome novelty!</button>
     </form>
-    </>
+    </LoadableContainer>
   );
   }
