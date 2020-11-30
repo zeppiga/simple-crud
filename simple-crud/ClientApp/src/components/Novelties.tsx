@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Pagination, PaginationProps } from "./Pagination"
 import { Novelty, NoveltyProps } from "./Novelty";
+import { Alert } from "./Alert";
 import './Novelties.css';
 
 const noveltiesPerPage = 10;
@@ -11,6 +12,7 @@ export function Novelties() {
     const [novelties, setNovelties] = useState(Array<NoveltyViewModel>(0));
     const [isLoading, setIsLoading] = useState(false);
     const [pagesCount, setPagesCount] = useState(null as number | null)
+    const [alertState, setAlertState] = useState({show: false, message: ""});
 
     useEffect(() => {
         setIsLoading(true);
@@ -49,7 +51,23 @@ export function Novelties() {
             prev.splice(toDeleteIndex, 1);
 
             return [...prev];
-        })
+        });
+
+        setAlertState({show: true, message: "Novelty was sucessfully deleted."})
+    }
+
+    function getOnModify(novelty: NoveltyViewModel) {
+        return (name: string, lastChanged: Date) => {
+            setNovelties(prev => {
+                const noveltyToChange = prev.find(x => x.id === novelty.id);
+                noveltyToChange!.name = name;
+                noveltyToChange!.lastChanged = lastChanged;
+
+                return [...prev].sort((a, b) => new Date(b.lastChanged).getTime() - new Date(a.lastChanged).getTime());
+            });
+
+            setAlertState({ show: true, message: "Novelty was sucessfully modified." })
+        };
     }
 
     function getPaginationProps(): PaginationProps {
@@ -62,13 +80,7 @@ export function Novelties() {
     function getNoveltyProps(novelty: NoveltyViewModel) : NoveltyProps {
         return {
             id: novelty.id,
-            changeName: (name: string, lastChanged: Date) => setNovelties(prev => {
-                const noveltyToChange = prev.find(x => x.id === novelty.id);
-                noveltyToChange!.name = name;
-                noveltyToChange!.lastChanged = lastChanged;
-
-                return [...prev].sort((a, b) => new Date(b.lastChanged).getTime() - new Date(a.lastChanged).getTime());
-            })
+            onChange: getOnModify(novelty)
         }
     }
 
@@ -92,11 +104,16 @@ export function Novelties() {
         setNovelties(novelties);
     }
 
+    function getAlertProps(alertState: {show: boolean, message: string}) {
+        return {show: alertState.show, message:alertState.message, hideAfterSeconds: 2, onAlertClose: () => setAlertState(prev => ({...prev, show: false}))};
+    }
+
     return (
         <>
         {
             isLoading ? <div> loadin...</div> :        
         <div className="list-container">
+            <Alert {...getAlertProps(alertState)}></Alert>
             <div className="row list-header">
                 <div className="col-sm-1">
                     No.

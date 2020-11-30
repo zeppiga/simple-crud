@@ -33,7 +33,7 @@ export function NavMenu() {
                    <NavLink tag={Link} className="text-dark" to="/novelties">List of novelties</NavLink>
                  </NavItem>
                  <NavItem>
-                   <NavLink tag={Link} className="text-dark" onClick={goToSwaggerPortal}>Swagger UI</NavLink>
+                   <NavLink tag={Link} className="text-dark" to="/" onClick={goToSwaggerPortal}>Swagger UI</NavLink>
                  </NavItem>
                </ul>
              </Collapse>

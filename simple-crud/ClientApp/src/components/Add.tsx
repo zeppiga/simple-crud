@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { Alert, AlertProps } from "./Alert";
 
 export function Add() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
 
   function handleSubmit(event: any) {
     setIsLoading(true);
@@ -16,8 +18,7 @@ export function Add() {
       },
       body: JSON.stringify({name, description})
     }).then(() => {
-      // todo 
-      alert('success!');
+      setShowAlert(true);
       setIsLoading(false);
     })
 
@@ -38,8 +39,17 @@ export function Add() {
     return <div>loading...</div>
   }
 
+  function getAlertState(show: boolean) {
+      return {
+        show: showAlert, message:"Your novelty was sucessfully added!", hideAfterSeconds: 10, onAlertClose: () => setShowAlert(false)
+      }
+  }
+
   return (
-    <form onSubmit={handleSubmit}>
+    <>
+      {/* <Alert {...{show: showAlert, message:"Your novelty was sucessfully added!", hideAfterSeconds: 2, onAlertClose: () => setShowAlert(false)}}></Alert> */}
+      <Alert {...getAlertState(showAlert)}></Alert>
+      <form onSubmit={handleSubmit}>
     <div className="form-group">
       <label>Name of your awesome novelty</label>
       <input type="text" className="form-control" onChange={handleNameChange}></input>
@@ -51,5 +61,6 @@ export function Add() {
     </div>
     <button type="submit" className="btn btn-primary">Add your awesome novelty!</button>
     </form>
+    </>
   );
   }

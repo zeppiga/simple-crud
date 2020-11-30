@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 export interface NoveltyProps {
     id : number;
-    changeName: (name: string, lastChanged: Date) => void;
+    onChange: (name: string, lastChanged: Date) => void;
 }
 
 interface NoveltyDetailed {
@@ -43,7 +43,7 @@ export function Novelty(props: NoveltyProps) {
 
         const responseNovelty = await noveltyRepsonse.json();
         setNovelty(responseNovelty);
-        props.changeName(responseNovelty.name, responseNovelty.lastChanged);
+        props.onChange(responseNovelty.name, responseNovelty.lastChanged);
         setIsLoading(false);
     }
 
